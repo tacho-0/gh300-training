@@ -27,3 +27,21 @@ def test_remove_participant_returns_404_when_not_found():
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Participant not found"
+
+
+def test_signup_returns_400_when_activity_is_full():
+    activity_name = "Chess Club"
+    email = "new.student@mergington.edu"
+    original_participants = activities[activity_name]["participants"][:]
+
+    try:
+        activities[activity_name]["participants"] = [
+            f"filled{i}@mergington.edu" for i in range(activities[activity_name]["max_participants"])
+        ]
+
+        response = client.post(f"/activities/{activity_name}/signup?email={email}")
+
+        assert response.status_code == 400
+        assert response.json()["detail"] == "Activity is full"
+    finally:
+        activities[activity_name]["participants"] = original_participants
